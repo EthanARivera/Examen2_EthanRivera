@@ -2,11 +2,12 @@ import type { Usuario } from "../types/Usuario";
 
 interface Props {
   data: Usuario;
-  onConfirm: () => void;
+  onConfirmPdf: () => void;
+  onConfirmXml: () => void;
   onCancel: () => void;
 }
 
-export default function Documento1({ data, onConfirm, onCancel }: Props) {
+export default function Documento1({ data, onConfirmPdf, onConfirmXml, onCancel }: Props) {
   return (
     <div className="mx-auto flex w-full flex-col gap-5 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
       <div className="space-y-1">
@@ -31,10 +32,18 @@ export default function Documento1({ data, onConfirm, onCancel }: Props) {
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
-          onClick={onConfirm}
+          onClick={onConfirmPdf}
           className="rounded-lg bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
         >
           Confirmar y descargar PDF
+        </button>
+
+        <button
+          type="button"
+          onClick={onConfirmXml}
+          className="rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+        >
+          Descargar XML
         </button>
 
         <button

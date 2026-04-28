@@ -7,17 +7,20 @@ import type { Usuario } from "../types/Usuario.ts";
 export default function Home() {
   const [usuarioPendiente, setUsuarioPendiente] = useState<Usuario | null>(null);
 
+  const normalizarNombreArchivo = (usuario: Usuario) =>
+    `${usuario.nombre}_${usuario.apellido}`
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_\-]/g, "") || "usuario";
+
   const generarPdf = (usuario: Usuario) => {
     const documento = new jsPDF();
     const pageWidth = documento.internal.pageSize.getWidth();
     const pageHeight = documento.internal.pageSize.getHeight();
     const leftMargin = 20;
     const contentWidth = pageWidth - leftMargin * 2;
-    const safeFileName = `${usuario.nombre}_${usuario.apellido}`
-      .trim()
-      .toLowerCase()
-      .replace(/\s+/g, "_")
-      .replace(/[^a-z0-9_\-]/g, "");
+    const safeFileName = normalizarNombreArchivo(usuario);
 
     let currentY = 20;
     const disclaimer =
@@ -79,7 +82,32 @@ export default function Home() {
       align: "right"
     });
 
-    documento.save(`formato_universitario_${safeFileName || "usuario"}.pdf`);
+    documento.save(`formato_universitario_${safeFileName}.pdf`);
+  };
+
+  const escaparXml = (valor: string) =>
+    valor
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/\"/g, "&quot;")
+      .replace(/'/g, "&apos;");
+
+  const generarXml = (usuario: Usuario) => {
+    const fecha = new Date().toLocaleDateString("es-ES");
+    const disclaimer =
+      "Por medio del presente se certifica que los datos proporcionados serán usados únicamente con fines académicos y de registro interno.";
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>\n<documentoUniversitario>\n  <encabezado>\n    <titulo>UNIVERSIDAD - FORMATO DE REGISTRO</titulo>\n    <fechaEmision>${escaparXml(fecha)}</fechaEmision>\n  </encabezado>\n  <estudiante>\n    <nombre>${escaparXml(usuario.nombre)}</nombre>\n    <apellido>${escaparXml(usuario.apellido)}</apellido>\n    <edad>${usuario.edad}</edad>\n    <correo>${escaparXml(usuario.correo)}</correo>\n    <direccion>${escaparXml(usuario.direccion)}</direccion>\n  </estudiante>\n  <disclaimer>${escaparXml(disclaimer)}</disclaimer>\n</documentoUniversitario>`;
+
+    const blob = new Blob([xml], { type: "application/xml;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const enlace = document.createElement("a");
+    enlace.href = url;
+    enlace.download = `formato_universitario_${normalizarNombreArchivo(usuario)}.xml`;
+    document.body.appendChild(enlace);
+    enlace.click();
+    enlace.remove();
+    URL.revokeObjectURL(url);
   };
 
   return (
@@ -90,8 +118,12 @@ export default function Home() {
         {usuarioPendiente && (
           <Documento1
             data={usuarioPendiente}
-            onConfirm={() => {
+            onConfirmPdf={() => {
               generarPdf(usuarioPendiente);
+              setUsuarioPendiente(null);
+            }}
+            onConfirmXml={() => {
+              generarXml(usuarioPendiente);
               setUsuarioPendiente(null);
             }}
             onCancel={() => setUsuarioPendiente(null)}
