@@ -111,8 +111,10 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 px-4 py-10">
-      <div className="mx-auto flex w-full max-w-3xl flex-col gap-6">
+    <div className="relative min-h-screen overflow-hidden px-4 py-10 sm:px-6 lg:px-8">
+      <div className="absolute inset-x-0 top-0 -z-10 h-80 bg-gradient-to-b from-cyan-100 via-white to-transparent" />
+      <div className="absolute right-[-6rem] top-24 -z-10 h-56 w-56 rounded-full bg-slate-200/60 blur-3xl" />
+      <div className="mx-auto flex w-full max-w-6xl flex-col gap-6">
         <Formulario onSubmit={setUsuarioPendiente} />
 
         {usuarioPendiente && (
